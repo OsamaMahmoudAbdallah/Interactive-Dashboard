@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="sun"></div>
+    <div class="cloud"></div>
+
+    <!-- Existing Card -->
+    <div class="card">
+        <h1>Dashboard</h1>
+        <div id="clock" class="clock">00:00:00</div>
+        <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
+    </div>
+
+    <!-- New Sections -->
+    <div class="new-sections">
+        <!-- Motivational Quote -->
+        <div class="section-card">
+            <p id="quote" class="quote-text">Loading inspiration...</p>
+        </div>
+
+        <!-- Todo List -->
+        <div class="section-card">
+            <h3>Todo List</h3>
+            <div class="todo-input-group">
+                <input type="text" id="todo-input" class="todo-input" placeholder="Add a new task...">
+                <button class="todo-btn" onclick="addTodo()">Add</button>
+            </div>
+            <ul id="todo-list" class="todo-list"></ul>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="section-card">
+            <div class="progress-container">
+                <span class="progress-label">Daily Goal</span>
+                <div class="progress-bar-bg">
+                    <div id="progress-bar" class="progress-bar-fill"></div>
+                </div>
+                <button class="btn-increment" onclick="incrementProgress()">+ 10%</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme Toggle
+        function toggleTheme() {
+            document.body.classList.toggle('dark-theme');
+        }
+
+        // 1. Live Clock
+        function updateClock() {
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('clock').textContent = `${h}:${m}:${s}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // 2. Random Quote
+        const quotes = [
+            "Believe you can and you're halfway there.",
+            "The only way to do great work is to love what you do.",
+            "Don't watch the clock; do what it does. Keep going.",
+            "Success is not final, failure is not fatal: it is the courage to continue that counts.",
+            "Your limitation—it's only your imagination.",
+            "Push yourself, because no one else is going to do it for you.",
+            "Great things never come from comfort zones.",
+            "Dream it. Wish it. Do it.",
+            "Success doesn't just find you. You have to go out and get it.",
+            "The harder you work for something, the greater you'll feel when you achieve it."
+        ];
+        document.getElementById('quote').textContent = quotes[Math.floor(Math.random() * quotes.length)];
+
+        // 3. Todo List
+        const todoInput = document.getElementById('todo-input');
+        const todoList = document.getElementById('todo-list');
+        let todos = JSON.parse(localStorage.getItem('todos')) || [];
+
+        function saveTodos() {
+            localStorage.setItem('todos', JSON.stringify(todos));
+            renderTodos();
+        }
+
+        function addTodo() {
+            const text = todoInput.value.trim();
+            if (text) {
+                todos.push({ text, completed: false });
+                todoInput.value = '';
+                saveTodos();
+            }
+        }
+
+        function toggleTodo(index) {
+            todos[index].completed = !todos[index].completed;
+            saveTodos();
+        }
+
+        function deleteTodo(index) {
+            todos.splice(index, 1);
+            saveTodos();
+        }
+        
+        // Corrected helper for the implementation
+        function renderTodos() {
+            todoList.innerHTML = '';
+            todos.forEach((todo, index) => {
+                const li = document.createElement('li');
+                li.className = 'todo-item';
+                li.innerHTML = `
+                    <input type="checkbox" ${todo.completed ? 'checked' : ''} onchange="toggleTodo(${index})">
+                    <span class="todo-text ${todo.completed ? 'completed' : ''}">${todo.text}</span>
+                    <button class="btn-delete" onclick="deleteTodo(${index})">Delete</button>
+                `;
+                todoList.appendChild(li);
+            });
+        }
+
+        // Re-defining deleteTodo properly to avoid the typo in my thought process
+        window.deleteTodo = function(index) {
+            todos.splice(index, 1);
+            saveTodos();
+        };
+
+        // Initial render
+        renderTodos();
+
+        // 4. Progress Bar
+        let progress = parseInt(localStorage.getItem('progress')) || 0;
+        const progressBar = document.getElementById('progress-bar');
+
+        function updateProgressBar() {
+            progressBar.style.width = progress + '%';
+            localStorage.setItem('progress', progress);
+        }
+
+        window.incrementProgress = function() {
+            progress += 10;
+            if (progress >= 100) progress = 0;
+            updateProgressBar();
+        };
+
+        updateProgressBar();
+
+        // Add Enter key support for todo
+        todoInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addTodo();
+        });
+
+    </script>
+</body>
+</html>
